@@ -1,0 +1,39 @@
+# Ignore node_modules directory
+node_modules/
+
+# Ignore logs
+logs/
+*.log
+
+# Ignore dotenv environment file
+.env
+
+# Ignore any temporary files
+*.tmp
+
+# Ignore npm debug log
+npm-debug.log*
+
+# Ignore yarn errors log
+yarn-error.log
+
+# Ignore vscode settings
+.vscode/
+
+# Ignore system files from Mac OS
+.DS_Store
+
+# Ignore environment configuration
+.env
+
+# Ignore generated documentation
+doc/
+
+# Ignore runtime data
+runtime/
+
+# Ignore IDE files
+.idea/
+
+# Ignore database files
+*.db
