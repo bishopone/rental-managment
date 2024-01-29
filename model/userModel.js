@@ -5,7 +5,7 @@ const bcrypt = require("bcrypt")
 
 async function getAllUsers() {
   try {
-    const [rows] = await db.promise().query(`SELECT * FROM Users`);
+    const [rows] = await db.promise().query(`SELECT * FROM users`);
     return rows;
   } catch (error) {
     throw error;
@@ -13,7 +13,7 @@ async function getAllUsers() {
 }
 async function getAllUsersInfo() {
   try {
-    const [rows] = await db.promise().query(`SELECT * FROM Users u JOIN roles r on u.RoleID = r.RoleID`);
+    const [rows] = await db.promise().query(`SELECT * FROM users u JOIN roles r on u.RoleID = r.RoleID`);
     return rows;
   } catch (error) {
     throw error;
@@ -22,7 +22,7 @@ async function getAllUsersInfo() {
 
 async function getUserById(userId) {
   try {
-    const [rows] = await db.promise().query('SELECT * FROM Users WHERE UserID = ?', [userId]);
+    const [rows] = await db.promise().query('SELECT * FROM users WHERE UserID = ?', [userId]);
     return rows[0];
   } catch (error) {
     throw error;
@@ -31,7 +31,7 @@ async function getUserById(userId) {
 
 async function getUserRoleById(userId) {
   try {
-    const [rows] = await db.promise().query('SELECT r.RoleName FROM Users JOIN Roles r ON r.RoleID = Users.UserType WHERE UserID = ?', [userId]);
+    const [rows] = await db.promise().query('SELECT r.RoleName FROM users JOIN Roles r ON r.RoleID = users.UserType WHERE UserID = ?', [userId]);
     return rows[0] ? rows[0].RoleName : null;
   } catch (error) {
     throw error;
@@ -40,7 +40,7 @@ async function getUserRoleById(userId) {
 
 async function getUserByEmailOrUsernameOrPhone(email, username, phoneNumber) {
   try {
-    const [rows] = await db.promise().query('SELECT * FROM Users WHERE Email = ? OR Username = ? OR PhoneNumber = ?', [email, username, phoneNumber]);
+    const [rows] = await db.promise().query('SELECT * FROM users WHERE Email = ? OR Username = ? OR PhoneNumber = ?', [email, username, phoneNumber]);
     return rows;
   } catch (error) {
     throw error;
@@ -71,7 +71,7 @@ async function createUser(user) {
       // Add additional fields to sanitize
     };
 
-    const [result] = await db.promise().query('INSERT INTO Users SET ?', [sanitizedUser]);
+    const [result] = await db.promise().query('INSERT INTO users SET ?', [sanitizedUser]);
     return result;
   } catch (error) {
     throw error;
@@ -107,7 +107,7 @@ async function updateUser(user, userId, profileImagePath = null) {
       sanitizedUser.ProfilePicture = profileImagePath;
     }
 
-    const [result] = await db.promise().query('UPDATE Users SET ? WHERE UserID = ?', [sanitizedUser, userId]);
+    const [result] = await db.promise().query('UPDATE users SET ? WHERE UserID = ?', [sanitizedUser, userId]);
     return result;
   } catch (error) {
     throw error;
@@ -116,7 +116,7 @@ async function updateUser(user, userId, profileImagePath = null) {
 
 async function deleteUser(userId) {
   try {
-    const [result] = await db.promise().query('DELETE FROM Users WHERE UserID = ?', [userId]);
+    const [result] = await db.promise().query('DELETE FROM users WHERE UserID = ?', [userId]);
     return result;
   } catch (error) {
     throw error;
@@ -125,7 +125,7 @@ async function deleteUser(userId) {
 
 async function loginAdmin(phoneNumber, password) {
   try {
-    const [rows] = await db.promise().query('SELECT * FROM Users WHERE PhoneNumber = ? AND Password = ?', [phoneNumber, password]);
+    const [rows] = await db.promise().query('SELECT * FROM users WHERE PhoneNumber = ? AND Password = ?', [phoneNumber, password]);
     return rows[0];
   } catch (error) {
     throw error;

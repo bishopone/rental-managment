@@ -3,7 +3,7 @@ const db = require('../config/dbConfig');
 
 async function getAllRoles() {
   try {
-    const [rows] = await db.promise().query('SELECT * FROM Roles');
+    const [rows] = await db.promise().query('SELECT * FROM roles');
     return rows;
   } catch (error) {
     throw error;
@@ -12,7 +12,7 @@ async function getAllRoles() {
 
 async function getRoleById(roleId) {
   try {
-    const [rows] = await db.promise().query('SELECT * FROM Roles WHERE RoleID = ?', [roleId]);
+    const [rows] = await db.promise().query('SELECT * FROM roles WHERE RoleID = ?', [roleId]);
     return rows[0];
   } catch (error) {
     throw error;
@@ -21,7 +21,7 @@ async function getRoleById(roleId) {
 
 async function createRole(role) {
   try {
-    const [result] = await db.promise().query('INSERT INTO Roles (RoleName) VALUES (?)', [role]);
+    const [result] = await db.promise().query('INSERT INTO roles (RoleName) VALUES (?)', [role]);
     return result;
   } catch (error) {
     throw error;
@@ -30,7 +30,7 @@ async function createRole(role) {
 
 async function updateRole(role, roleId) {
   try {
-    const [result] = await db.promise().query('UPDATE Roles SET ? WHERE RoleID = ?', [role, roleId]);
+    const [result] = await db.promise().query('UPDATE roles SET ? WHERE RoleID = ?', [role, roleId]);
     return result;
   } catch (error) {
     throw error;
@@ -39,7 +39,7 @@ async function updateRole(role, roleId) {
 
 async function deleteRole(roleId) {
   try {
-    const [result] = await db.promise().query('DELETE FROM Roles WHERE RoleID = ?', [roleId]);
+    const [result] = await db.promise().query('DELETE FROM roles WHERE RoleID = ?', [roleId]);
     return result;
   } catch (error) {
     throw error;
