@@ -18,5 +18,5 @@ app.use('/api/v1/role', roleRoute);
 app.use('/api/v1/permission', permissionRoute);
 app.use('/api/v1/properties', propertieRoute);
 
-// app.listen(5000, () => { console.log("connected") });
-app.listen();
+app.listen(5000, () => { console.log("connected") });
+// app.listen();
