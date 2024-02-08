@@ -15,6 +15,17 @@ async function getAllUsers(req, res) {
     res.status(500).json({ error: 'Internal server error' });
   }
 }
+async function fetchUsersNotInProperty(req, res) {
+  try {
+    const { propertyId } = req.params; // Extract the property ID from the request parameters
+
+    const [users] = await userModel.fetchUsersNotInProperty(propertyId);
+    res.json(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
 async function getAllUsersInfo(req, res) {
   try {
     const users = await userModel.getAllUsersInfo();
@@ -32,6 +43,7 @@ async function getUserById(req, res) {
     if (!user) {
       res.status(404).json({ error: 'User not found' });
     } else {
+      delete user.Password
       res.json(user);
     }
   } catch (error) {
@@ -60,11 +72,11 @@ async function createUser(req, res) {
         res.status(500).json({ error: 'Failed to upload image.' });
         return;
       }
-      user.ProfilePicture = imagePath;
-      const result = await userModel.createUser(user);
-      res.status(201).json({ message: 'User created', userId: result.insertId });
-      return;
     });
+    user.ProfilePicture = imagePath;
+    const result = await userModel.createUser(user);
+    res.status(201).json({ message: 'User created', userId: result.insertId });
+    return;
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error });
@@ -95,10 +107,28 @@ async function loginUser(req, res) {
 }
 
 async function updateUser(req, res) {
-  const user = req.body;
-  const userId = req.params.id;
   try {
-    const result = await userModel.updateUser(user, userId);
+    const user = req.body;
+    const userId = req.params.id;
+    const ProfilePicture = req.files?.ProfilePicture;
+    console.log(req.files)
+    console.log(user)
+    var imagePath = null
+    if (ProfilePicture) {
+      const propertiesDir = path.join('./uploads/profiles');
+      if (!fs.existsSync(propertiesDir)) {
+        fs.mkdirSync(propertiesDir);
+      }
+      imagePath = path.join(propertiesDir, ProfilePicture.name);
+      ProfilePicture.mv(imagePath, async (err) => {
+        if (err) {
+          res.status(500).json({ error: 'Failed to upload image.' });
+          return;
+        }
+      });
+    }
+
+    const result = await userModel.updateUser(user, userId, imagePath);
     res.status(200).json({ message: 'User updated' });
   } catch (error) {
     console.error(error);
@@ -128,5 +158,6 @@ module.exports = {
   updateUser,
   loginUser,
   deleteUser,
-  getAllUsersInfo
+  getAllUsersInfo,
+  fetchUsersNotInProperty
 };

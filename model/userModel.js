@@ -80,11 +80,6 @@ async function createUser(user) {
 
 async function updateUser(user, userId, profileImagePath = null) {
   try {
-    // Data Validation
-    if (!user.Email || !user.Username || !user.PhoneNumber || !user.FirstName || !user.LastName) {
-      throw new Error('Required fields are missing.');
-    }
-
     // Validate Email Format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(user.Email)) {
@@ -93,20 +88,20 @@ async function updateUser(user, userId, profileImagePath = null) {
 
     // Sanitize Data
     const sanitizedUser = {
-      ...user,
-      Email: user.Email.trim(),
       Username: user.Username.trim(),
+      Email: user.Email.trim(),
       PhoneNumber: user.PhoneNumber.trim(),
-      FirstName: user.FirstName.trim(),
-      LastName: user.LastName.trim(),
-      // Add additional fields to sanitize
+      RoleID: user.RoleID.trim(),
     };
 
     // Update Profile Picture if provided
     if (profileImagePath) {
       sanitizedUser.ProfilePicture = profileImagePath;
     }
-
+    if (user.Password && user.Password !== 'undefined') {
+      const encodedPassword = await bcrypt.hash(user.Password.trim(), config.salt)
+      sanitizedUser.Password = encodedPassword
+    }
     const [result] = await db.promise().query('UPDATE users SET ? WHERE UserID = ?', [sanitizedUser, userId]);
     return result;
   } catch (error) {
@@ -131,6 +126,22 @@ async function loginAdmin(phoneNumber, password) {
     throw error;
   }
 }
+async function fetchUsersNotInProperty(propertyId) {
+  try {
+    const query = `
+    SELECT * FROM users u JOIN roles r on u.RoleID = r.RoleID
+    WHERE UserID NOT IN (
+        SELECT UserID 
+        FROM userproperty 
+        WHERE PropertyID = ?
+    )`;
+
+    return await db.promise().query(query, [propertyId]);
+
+  } catch (error) {
+    throw error;
+  }
+}
 
 module.exports = {
   getAllUsers,
@@ -141,5 +152,6 @@ module.exports = {
   updateUser,
   deleteUser,
   loginAdmin,
-  getAllUsersInfo
+  getAllUsersInfo,
+  fetchUsersNotInProperty
 };

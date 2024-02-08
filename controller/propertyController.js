@@ -11,6 +11,18 @@ async function getAllProperties(req, res) {
         res.status(500).json({ error: 'An unexpected error occurred while fetching properties. Please try again later.' });
     }
 }
+async function getPropertyDetailById(req, res) {
+    try {
+        const propertyId = req.params.id;
+        console.log(propertyId)
+        const properties = await propertyModel.getPropertyDetailById(propertyId);
+        console.log(properties)
+        res.json(properties);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'An unexpected error occurred while fetching properties. Please try again later.' });
+    }
+}
 
 async function getPropertyById(req, res) {
     const propertyId = req.params.id;
@@ -29,7 +41,7 @@ async function getPropertyById(req, res) {
 
 
 async function createProperty(req, res) {
-    
+
     try {
         const { owner, name, location, description, numFloors } = req.body;
         const { image } = req.files; // Assuming 'image' is the name of the file input field
@@ -103,11 +115,37 @@ async function deleteProperty(req, res) {
         res.status(500).json({ error: 'An unexpected error occurred while deleting the property. Please try again later.' });
     }
 }
+async function connectUserToProperty(req, res) {
+    const { userId, propertyId } = req.body;
+
+    try {
+        await propertyModel.connectUserToProperty(userId, propertyId);
+        res.status(200).json({ message: 'User connected to property successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+async function removeUserFromProperty(req, res) {
+    const { userId, propertyId } = req.params;
+    console.log(userId, propertyId)
+    try {
+        await propertyModel.removeUserFromProperty(userId, propertyId);
+        res.status(200).json({ message: 'User removed from property successfully' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
 
 module.exports = {
     getAllProperties,
     getPropertyById,
+    getPropertyDetailById,
     createProperty,
     updateProperty,
     deleteProperty,
+    connectUserToProperty,
+    removeUserFromProperty
 };
