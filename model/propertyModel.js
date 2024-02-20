@@ -2,8 +2,54 @@ const db = require('../config/dbConfig');
 
 async function getAllProperties() {
   try {
-    const [rows] = await db.promise().query('SELECT * FROM properties');
+    const [rows] = await db.promise().query('SELECT * FROM properties ');
     return rows;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function getAllPropertiesWithAuthority(userId) {
+  try {
+    // Step 1: Query User Properties
+    const userPropertiesQuery = `
+      SELECT p.id AS propertyId, p.*, u.ProfilePicture AS UserProfile, u.Username, r.RoleName FROM properties p JOIN users u ON u.UserID = p.owner_id JOIN roles r ON r.RoleID = u.RoleID
+          JOIN userproperty up ON p.id = up.PropertyID
+          WHERE up.UserID = ?
+          GROUP BY p.id
+      `;
+    const [propertyRows] = await db.promise().query(userPropertiesQuery, [userId]);
+
+    // Step 2: Fetch Users and Rooms for Each Property
+    const propertiesWithData = await Promise.all(propertyRows.map(async (propertyRow) => {
+      const propertyId = propertyRow.propertyId;
+
+      // Fetch Users for the Property
+      const usersQuery = `
+              SELECT u.*
+              FROM users u
+              JOIN userproperty up ON u.UserID = up.UserID
+              WHERE up.PropertyID = ?
+          `;
+      const [userRows] = await db.promise().query(usersQuery, [propertyId]);
+
+      // Fetch Rooms for the Property
+      const roomsQuery = `
+              SELECT *
+              FROM rooms
+              WHERE PropertyID = ?
+          `;
+      const [roomRows] = await db.promise().query(roomsQuery, [propertyId]);
+
+      return {
+        property: propertyRow,
+        users: userRows,
+        rooms: roomRows
+      };
+    }));
+
+    // Step 3: Organize Data
+    return propertiesWithData;
   } catch (error) {
     throw error;
   }
@@ -106,4 +152,5 @@ module.exports = {
   getPropertyDetailById,
   connectUserToProperty,
   removeUserFromProperty,
+  getAllPropertiesWithAuthority
 };

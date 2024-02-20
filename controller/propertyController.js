@@ -11,12 +11,19 @@ async function getAllProperties(req, res) {
         res.status(500).json({ error: 'An unexpected error occurred while fetching properties. Please try again later.' });
     }
 }
+async function getAllPropertiesWithAuthority(req, res) {
+    try {
+        const properties = await propertyModel.getAllPropertiesWithAuthority(req.userId);
+        res.json(properties);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'An unexpected error occurred while fetching properties. Please try again later.' });
+    }
+}
 async function getPropertyDetailById(req, res) {
     try {
         const propertyId = req.params.id;
-        console.log(propertyId)
         const properties = await propertyModel.getPropertyDetailById(propertyId);
-        console.log(properties)
         res.json(properties);
     } catch (error) {
         console.error(error);
@@ -141,6 +148,7 @@ async function removeUserFromProperty(req, res) {
 
 module.exports = {
     getAllProperties,
+    getAllPropertiesWithAuthority,
     getPropertyById,
     getPropertyDetailById,
     createProperty,
