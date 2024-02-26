@@ -33,16 +33,44 @@ async function createAttachments(attachments, contractId, tenantId, roomId, user
         throw error;
     }
 }
+function formatDate(dateString) {
+    // Parse the date string into a Date object
+    const originalDate = new Date(dateString);
+
+    // Get the year, month, and day components from the Date object
+    const year = originalDate.getFullYear(); // Full year (4 digits)
+    const month = originalDate.getMonth() + 1; // Month (0-11, adding 1 to get 1-12)
+    const day = originalDate.getDate(); // Day of the month (1-31)
+
+    // Ensure month and day are in two-digit format
+    const formattedMonth = month < 10 ? '0' + month : month;
+    const formattedDay = day < 10 ? '0' + day : day;
+
+    // Construct the formatted date string in yy-mm-dd format
+    const formattedDate = `${year}-${formattedMonth}-${formattedDay}`;
+
+    return formattedDate;
+}
+
+function getDayFromDate(dateString) {
+    // Parse the date string into a Date object
+    const originalDate = new Date(dateString);
+
+    // Get the day component from the Date object
+    const day = originalDate.getDate(); // Day of the month (1-31)
+
+    return day;
+}
 
 async function createContractWithAttachments(contractData, attachments, userId) {
     try {
         // Insert contract data into the contracts table
-        const [result] = await db.promise().query('INSERT INTO `contracts` (`TenantID`, `RoomID`, `ContractState`, `ContractStartDate`, `ContractEndDate`, `Rent`, `DueDate`, `Interest`) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)', [contractData.TenantID, contractData.RoomID, 'running', contractData.ContractStartDate, contractData.ContractEndDate, contractData.Rent, contractData.DueDate, contractData.Interest]);
+        console.log("contractData");
+        console.log(contractData);
+        const [room] = await db.promise().query('SELECT * FROM `rooms` WHERE RoomID = ?', [contractData.RoomID]);
+        const [result] = await db.promise().query('INSERT INTO `contracts` (`TenantID`, `RoomID`, `PropertyID`, `ContractState`, `ContractStartDate`, `ContractEndDate`, `Rent`, `DueDate`, `Interest`) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?)', [contractData.TenantID, contractData.RoomID, room[0].PropertyID, 'running', formatDate(contractData.ContractStartDate), formatDate(contractData.ContractEndDate), contractData.Rent, getDayFromDate(contractData.DueDate), contractData.Interest]);
         const contractId = result.insertId;
 
-        // Insert attachment data into the attachments table
-        console.log('selam out')
-        console.log(attachments)
         if (attachments && attachments.length > 0) {
             console.log('selam in')
             const attachmentValues = await createAttachments(attachments, contractId, contractData.TenantID, contractData.RoomID, userId);
@@ -152,9 +180,11 @@ async function getImageAsBase64(url) {
     }
 }
 
-async function getContractsPdf(contractId, userid) {
+async function getContractsPdf(contractId, userid, baseUrl) {
     try {
-        const contractQuery = `SELECT c.*, t.*, r.*, p.*
+        const contractQuery = `SELECT c.*, t.*,
+                        CONCAT( t.FirstName, ' ', t.MiddleName, ' ', t.LastName) AS TenantFullName, r.*, p.*,u.*,
+                        CONCAT(p.name, ' ', r.RoomNumber) AS RoomData
                         FROM contracts c
                         JOIN tenants t ON t.TenantID = c.TenantID
                         JOIN rooms r ON r.RoomID = c.RoomID
@@ -166,32 +196,45 @@ async function getContractsPdf(contractId, userid) {
         const [contract] = await db.promise().query(contractQuery, [contractId]);
         const [attachment] = await db.promise().query(attachmentQuery, [contractId]);
         console.log(contract)
-        console.log(attachment)
+        // console.log(attachment)
 
         const attachimg = await Promise.all(
             attachment.map(async (val) => {
                 return await getImageAsBase64(`./${val.FilePath}`);
             })
         );
-        console.log(attachimg)
+        // console.log(attachimg)
         const font = {
             Roboto: {
-              data: fs.readFileSync('AbyssinicaSIL-Regular.ttf'),
-              fallback: true,
+                data: fs.readFileSync('AbyssinicaSIL-Regular.ttf'),
+                fallback: true,
             },
-          };
+        };
+        const startdate = contract[0].ContractStartDate
+        const enddate = contract[0].ContractEndDate
+
+        const startyear = startdate.getFullYear();
+        const startmonth = startdate.getMonth() + 1; // Month is zero-based, so we add 1
+        const startday = startdate.getDate();
+
+        const endyear = enddate.getFullYear();
+        const endmonth = enddate.getMonth() + 1; // Month is zero-based, so we add 1
+        const endday = enddate.getDate();
+
+        const humanReadableStartDate = `${startyear}-${startmonth}-${startday}`;
+        const humanReadableEndDate = `${endyear}-${endmonth}-${endday}`;
+
         const inputs = [
             {
-                "qrcode": "https://pdfme.com/",
-                "Owner": "Type Something...",
-                "Tenant_Name": "Type Something...",
-                "Property Adress": "Type Something...",
-                "Room ": "Type Something...",
-                "StartDate": "Type Something...",
-                "EndDate": "Type Something...",
-                "PaymentDueDate": "Type Something...",
-                "Interest": "Type Something...",
-                "attachment": "data:image/png;base64,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"
+                "qrcode": `${baseUrl}/contracts/pdf/${contractId}`,
+                "Owner": contract[0].Username,
+                "Tenant_Name": contract[0].TenantFullName,
+                "Property Adress": contract[0].location,
+                "Room ": contract[0].RoomData,
+                "StartDate": humanReadableStartDate,
+                "EndDate": humanReadableEndDate,
+                "PaymentDueDate": contract[0].DueDate.toString(),
+                "Interest": contract[0].Interest,
             }
         ];
         attachimg.map((val) => {

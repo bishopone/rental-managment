@@ -26,7 +26,9 @@ async function getContract(req, res) {
 async function getContractPdf(req, res) {
     try {
         const { id } = req.params
-        const pdfdata = await contractModel.getContractsPdf(id, req.userId);
+        const baseUrl = req.protocol + '://' + req.get('host');
+
+        const pdfdata = await contractModel.getContractsPdf(id, req.userId,baseUrl );
 
         if (!pdfdata) {
             res.status(404).send('Not Found');

@@ -11,6 +11,8 @@ async function getAllProperties(req, res) {
         res.status(500).json({ error: 'An unexpected error occurred while fetching properties. Please try again later.' });
     }
 }
+
+
 async function getAllPropertiesWithAuthority(req, res) {
     try {
         const properties = await propertyModel.getAllPropertiesWithAuthority(req.userId);

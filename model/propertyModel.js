@@ -9,6 +9,7 @@ async function getAllProperties() {
   }
 }
 
+
 async function getAllPropertiesWithAuthority(userId) {
   try {
     // Step 1: Query User Properties
@@ -144,7 +145,7 @@ async function removeUserFromProperty(userId, propertyId) {
   }
 }
 module.exports = {
-  getAllProperties,
+    getAllProperties,
   getPropertyById,
   createProperty,
   updateProperty,

@@ -34,9 +34,64 @@ async function getPaymentById(req, res) {
         res.status(500).json({ error: 'Internal server error' });
     }
 }
+async function getPaymentTransaction(req, res) {
+    try {
+        const paymentId = req.params.id;
+        const payment = await paymentModel.getPaymentTransaction(paymentId);
+        if (!payment) {
+            res.status(404).json({ error: 'Payments not found' });
+            return;
+        }
+        res.json(payment);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+async function getPaymentsLeft(req, res) {
+    try {
+        const contractId = req.params.id;
+        const payment = await paymentModel.getPaymentsLeft(contractId);
+        if (!payment) {
+            res.status(404).json({ error: 'Payments not found' });
+            return;
+        }
+        res.json(payment);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+async function getAllUpcomingPayments(req, res) {
+    try {
+        const propertyId = req.params.id;
+        const payment = await paymentModel.getAllUpcomingPayments(propertyId);
+        if (!payment) {
+            res.status(404).json({ error: 'Payment not found' });
+            return;
+        }
+        res.json(payment);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
+async function getAllPropertiesUserIn(req, res) {
+    try {
+        const properties = await paymentModel.getAllPropertiesUserIn(req.userId);
+        res.json(properties);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'An unexpected error occurred while fetching properties. Please try again later.' });
+    }
+}
+
 async function getPayments(req, res) {
     try {
-        const payment = await paymentModel.getPayments();
+        
+        const payment = await paymentModel.getPayments(req.userId);
         res.json(payment);
     } catch (error) {
         console.error(error);
@@ -70,7 +125,11 @@ async function deletePayment(req, res) {
 module.exports = {
     createPayment,
     getPaymentById,
+    getPaymentsLeft,
+    getAllUpcomingPayments,
+    getAllPropertiesUserIn,
     updatePayment,
     deletePayment,
+    getPaymentTransaction,
     getPayments
 };

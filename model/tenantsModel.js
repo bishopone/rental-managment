@@ -20,6 +20,7 @@ function deleteTenant(tenantId) {
 
 async function updateTenant(tenant, tenantId, ProfilePicture = null, GovernmentID = null) {
     try {
+        console.log("tenant, tenantId, ProfilePicture, GovernmentID")
         console.log(tenant, tenantId, ProfilePicture, GovernmentID)
         const sanitizedTenant = {
             FirstName: tenant.FirstName.trim(),
@@ -29,14 +30,16 @@ async function updateTenant(tenant, tenantId, ProfilePicture = null, GovernmentI
             PhoneNumber: tenant.PhoneNumber.trim(),
             AdditionalInfo: tenant.AdditionalInfo,
         };
-        if (ProfilePicture) {
+        if (!ProfilePicture) {
             sanitizedTenant.GovernmentID = GovernmentID;
         }
-        if (GovernmentID) {
+        if (!GovernmentID) {
             sanitizedTenant.ProfilePicture = ProfilePicture;
         }
+
         const [result] = await db.promise().query('UPDATE tenants SET ? WHERE TenantID = ?', [sanitizedTenant, tenantId]);
         console.log(result)
+        console.log(sanitizedTenant)
         return result;
     } catch (error) {
         console.log(error)

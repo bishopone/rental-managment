@@ -2,7 +2,7 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controller/userController');
-const { checkTokenValidity } = require("../middleware/middleware");
+const { checkTokenValidity,checkUserPermission } = require("../middleware/middleware");
 
 router.get('/', userController.getAllUsers);
 router.get('/info', userController.getAllUsersInfo);
