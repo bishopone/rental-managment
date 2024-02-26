@@ -129,7 +129,7 @@ async function deleteProperty(propertyId) {
 
 async function connectUserToProperty(userId, propertyId) {
   try {
-    const query = 'INSERT INTO UserProperty (UserID, PropertyID) VALUES (?, ?)';
+    const query = 'INSERT INTO userproperty (UserID, PropertyID) VALUES (?, ?)';
     await db.promise().query(query, [userId, propertyId]);
   } catch (error) {
     throw error;
@@ -138,7 +138,7 @@ async function connectUserToProperty(userId, propertyId) {
 
 async function removeUserFromProperty(userId, propertyId) {
   try {
-    const query = 'DELETE FROM UserProperty WHERE UserID = ? AND PropertyID = ?';
+    const query = 'DELETE FROM userproperty WHERE UserID = ? AND PropertyID = ?';
     await db.promise().query(query, [userId, propertyId]);
   } catch (error) {
     throw error;
