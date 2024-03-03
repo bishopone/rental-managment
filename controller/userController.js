@@ -1,6 +1,7 @@
 // userController.js
 const config = require('../config/config');
 const userModel = require('../model/userModel');
+const permissionModel = require('../model/permissionModel');
 const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const fs = require('fs');
@@ -85,6 +86,7 @@ async function createUser(req, res) {
 
 async function loginUser(req, res) {
   const { username, password } = req.body;
+  console.log(username, password);
   try {
     const user = await userModel.getUserByEmailOrUsernameOrPhone(username, username, username);
     if (user.length <= 0) {
@@ -98,8 +100,10 @@ async function loginUser(req, res) {
       return
     }
     delete user[0].Password
+    const [permissions] = await  permissionModel.getpermissionsById(user[0].UserID)
+    const permissionsList = permissions.map((p)=>p.permissionName)
     const token = jwt.sign(user[0], config.secretToken, { expiresIn: '2 days' });
-    res.status(200).json({ user: user[0], token: token });
+    res.status(200).json({ user: user[0], token: token, permissions: permissionsList });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal server error' });

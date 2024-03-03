@@ -68,6 +68,10 @@ async function createContractWithAttachments(contractData, attachments, userId) 
         console.log("contractData");
         console.log(contractData);
         const [room] = await db.promise().query('SELECT * FROM `rooms` WHERE RoomID = ?', [contractData.RoomID]);
+        if(room[0].Status !== "Available"){
+            throw 'room not available'
+        }
+        const [roomoccupy] = await db.promise().query(`UPDATE rooms SET Status = 'Occupied' WHERE rooms.RoomID = ?`, [contractData.RoomID]);
         const [result] = await db.promise().query('INSERT INTO `contracts` (`TenantID`, `RoomID`, `PropertyID`, `ContractState`, `ContractStartDate`, `ContractEndDate`, `Rent`, `DueDate`, `Interest`) VALUES ( ?, ?, ?, ?, ?, ?, ?, ?, ?)', [contractData.TenantID, contractData.RoomID, room[0].PropertyID, 'running', formatDate(contractData.ContractStartDate), formatDate(contractData.ContractEndDate), contractData.Rent, getDayFromDate(contractData.DueDate), contractData.Interest]);
         const contractId = result.insertId;
 
@@ -119,6 +123,27 @@ async function getContracts(filter, userId) {
 }
 
 
+
+async function getContractsAll() {
+    try {
+        const [rows] = await db.promise().query('SELECT * FROM contracts  JOIN tenants ON tenants.TenantID = contracts.TenantID WHERE ContractState = "running"');
+        return rows;
+    } catch (error) {
+        throw error;
+    }
+}
+
+async function changeContractState(ContractID, ContractState) {
+    try {
+        console.log(ContractID, ContractState);
+        const query = `UPDATE contracts SET ContractState = ? WHERE contracts.ContractID = ?`
+        const [rows] = await db.promise().query(query, [ ContractState, ContractID]);
+        console.log(rows);
+        return rows;
+    } catch (error) {
+        throw error;
+    }
+}
 
 async function getContractsPdf(contractId) {
     try {
@@ -264,6 +289,8 @@ module.exports = {
     getContractById,
     getContracts,
     getContractsPdf,
+    getContractsAll,
+    changeContractState,
     updateContractById,
     deleteContractById,
 };

@@ -15,9 +15,10 @@ async function createPayment(paymentData) {
 
         // Extract rent amount from contract
         const contractRent = contractRows[0].Rent;
-
+        console.log('month', paymentData.Month);
         // Check if there are previous payments
-        const [previousPaymentRows] = await db.promise().query('SELECT Amount FROM payments WHERE ContractID = ?', [paymentData.ContractID]);
+        const [previousPaymentRows] = await db.promise().query(`SELECT COALESCE(SUM(Amount), 0) AS Amount FROM payments WHERE ContractID = :contractID AND YEAR(Month) = YEAR(:date) AND MONTH(Month) = MONTH(:date);
+        `, { contractID: paymentData.ContractID, date: paymentData.Month });
         let totalPreviousPayments = 0;
         if (previousPaymentRows.length > 0) {
             previousPaymentRows.map((row) => totalPreviousPayments = parseFloat(totalPreviousPayments) + parseFloat(row.Amount));
@@ -61,11 +62,11 @@ async function getAllPropertiesUserIn(userId) {
         u.ProfilePicture AS UserProfile,
         u.Username,
         r.RoleName,
-        SUM(contracts.rent) AS MaxAmount,
+        COALESCE(SUM(contracts.rent),0) AS MaxAmount,
         COALESCE(SUM(payments.total_amount), 0) AS CurrentAmount
         FROM userproperty 
         JOIN properties ON userproperty.PropertyID = properties.id 
-        JOIN contracts ON properties.id = contracts.PropertyID 
+        LEFT JOIN contracts ON properties.id = contracts.PropertyID AND contracts.ContractState = 'running'
         LEFT JOIN (
         SELECT 
             ContractID,
@@ -162,15 +163,42 @@ async function getPaymentById(paymentId) {
         throw error;
     }
 }
+
+async function getPaymentByContractId(contractID) {
+    try {
+        const [rows] = await db.promise().query('SELECT * FROM payments WHERE ContractID = ?', [contractID]);
+        return rows;
+    } catch (error) {
+        throw error;
+    }
+}
 async function getPaymentsLeft(ContractID) {
     try {
-        const query = `SELECT Payed, Total, (Total - Payed) AS PaymentLeft
-        FROM (
-            SELECT c.Rent AS Total, COALESCE(SUM(p.Amount),0) AS Payed
-            FROM contracts c
-            JOIN payments p ON p.ContractID = c.ContractID
-            WHERE c.ContractID = ?
-        ) AS subquery;`
+        const query = `
+        SELECT 
+    Total,
+    (Total - Payed) AS PaymentLeft
+FROM (
+    SELECT 
+        c.Rent AS Total, 
+        COALESCE(SUM(p.Amount), 0) AS Payed
+    FROM 
+        contracts c
+    LEFT JOIN 
+        payments p ON p.ContractID = c.ContractID 
+    WHERE 
+        c.ContractID = 46
+        AND NOT EXISTS (
+            SELECT 1
+            FROM payments p2
+            WHERE p2.ContractID = c.ContractID
+            AND p2.Status = 'completed'
+            AND YEAR(p2.Month) = YEAR(p.Month)
+            AND MONTH(p2.Month) = MONTH(p.Month)
+        )
+) AS subquery;
+
+        `
 
         const [rows] = await db.promise().query(query, [ContractID]);
         return rows[0];
@@ -195,17 +223,50 @@ async function getPaymentTransaction(propertyId) {
 }
 async function getAllUpcomingPayments(propertyId) {
     try {
-        const query = `SELECT c.ContractID, r.RoomNumber,c.Rent,c.DueDate,CONCAT(t.FirstName, ' ', t.MiddleName, ' ', t.LastName) AS FullName FROM rooms r 
-        JOIN contracts c ON c.RoomID = r.RoomID AND r.PropertyID = ? AND c.ContractState = 'running' 
-        JOIN tenants t ON t.TenantID = c.TenantID 
-        LEFT JOIN payments p ON p.ContractID = c.ContractID 
-        WHERE NOT EXISTS 
-        ( SELECT 1 FROM payments p2 
-            WHERE p2.ContractID = p.ContractID
-            AND YEAR(p2.Month) = YEAR(p.Month) 
-            AND MONTH(p2.Month) = MONTH(p.Month) 
-            AND p2.Status = 'completed' )
-            GROUP BY c.ContractID;`
+        const query = `
+        SELECT
+        c.ContractID,
+        r.RoomNumber,
+        c.Rent,
+        CASE WHEN p.Status = 'completed' THEN DATE_ADD(
+            LAST_DAY(CURDATE()),
+            INTERVAL 1 DAY) -- Next month's due date
+            ELSE c.DueDate -- Current month's due date
+        END AS DueDate,
+        SUM(
+            DATEDIFF(
+                CASE WHEN p.Status = 'completed' THEN DATE_ADD(
+                    LAST_DAY(CURDATE()),
+                    INTERVAL 1 DAY) ELSE CONCAT(
+                        YEAR(CURDATE()),
+                        '-',
+                        MONTH(CURDATE()),
+                        '-',
+                        c.DueDate)
+                        END,
+                        CURDATE())) AS DaysLeft,
+                    CONCAT(
+                        t.FirstName,
+                        ' ',
+                        t.MiddleName,
+                        ' ',
+                        t.LastName
+                    ) AS FullName,
+                    CASE WHEN p.Status = 'completed' THEN 'pending' ELSE p.Status
+                END AS State
+            FROM
+                contracts c
+            JOIN tenants t ON
+                t.TenantID = c.TenantID
+            JOIN rooms r ON
+                r.RoomID = c.RoomID
+            LEFT JOIN payments p ON
+                p.ContractID = c.ContractID
+            WHERE
+                c.PropertyID = ?
+            GROUP BY
+                c.ContractID;
+    `
         const [rows] = await db.promise().query(query, [propertyId]);
         return rows;
     } catch (error) {
@@ -234,6 +295,7 @@ module.exports = {
     getPaymentById,
     getPaymentsLeft,
     getPayments,
+    getPaymentByContractId,
     updatePayment,
     getPaymentTransaction,
     getAllUpcomingPayments,

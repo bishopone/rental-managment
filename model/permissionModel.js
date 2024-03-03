@@ -5,22 +5,31 @@ function getAllpermissions() {
 }
 
 function createpermission(permissions) {
-  return db.promise().query('INSERT INTO permissions (permissionName) VALUES (?)', [ permissions.permissionName]);
+  return db.promise().query('INSERT INTO permissions (permissionName) VALUES (?)', [permissions.permissionName]);
 }
 function createpermissions(permissionsList) {
   // Using Promise.all to execute multiple queries concurrently
   const promises = permissionsList.map(permission => {
-      return db.promise().query('INSERT INTO permissions (permissionName) VALUES (?)', [permission]);
+    return db.promise().query('INSERT INTO permissions (permissionName) VALUES (?)', [permission]);
   });
 
   return Promise.all(promises);
 }
-function getpermissionsById(permissionsId) {
-  return db.promise().query('SELECT permissions.permissionName FROM users JOIN rolepermissions p ON p.roleID = users.UserType JOIN permissions ON permissions.permissionID = p.permissionID WHERE userID = ?', [permissionsId]);
+function getpermissionsById(userId) {
+  return db.promise().query(`SELECT
+  permissions.permissionName
+FROM
+  users
+  
+JOIN rolepermissions p ON
+  p.roleID = users.RoleID
+JOIN permissions ON permissions.permissionID = p.permissionID
+WHERE
+  userID = ?`, [userId]);
 }
 
 function updatepermissions(permissionsId, updatedpermissions) {
-  return db.promise().query('UPDATE permissions SET permissionName	 = ? WHERE id = ?', [updatedpermissions.permissionName	, permissionsId]);
+  return db.promise().query('UPDATE permissions SET permissionName	 = ? WHERE id = ?', [updatedpermissions.permissionName, permissionsId]);
 }
 
 function deletepermissions(permissionsId) {

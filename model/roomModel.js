@@ -53,7 +53,7 @@ async function getAllRoomsInPropertys(userid) {
         const query = `SELECT rooms.*,CONCAT(p.name, ' ', rooms.RoomNumber) AS RoomData FROM rooms 
                     JOIN properties p ON p.id = rooms.PropertyID
                     JOIN userproperty up ON rooms.PropertyID = up.PropertyID
-                    WHERE up.UserID = ?`;
+                    WHERE up.UserID = ? AND rooms.Status = "Available"`;
         const [rows] = await db.promise().query(query, [userid]);
         return rows;
     } catch (error) {
@@ -70,6 +70,20 @@ async function updateRoom(roomID, roomData) {
         Price,
         FloorNumber } = roomData;
     try {
+        const [resultexist] = await db.promise().query(`SELECT
+                                                            *
+                                                        FROM
+                                                            rooms r
+                                                        JOIN contracts c ON
+                                                            r.RoomID = c.RoomID
+                                                        WHERE
+                                                            r.RoomID = ? AND c.ContractState = 'running'
+                                                        ORDER BY
+                                                            r.PropertyID ASC`, [roomID])
+        if(resultexist.length !== 0 )
+        {
+            throw 'running contract exist`s ';
+        }
         const [result] = await db.promise().query('UPDATE rooms SET RoomNumber = ?, RoomType = ?, Status = ?, Description = ?, Price = ?, FloorNumber = ? WHERE RoomID = ?', [RoomNumber,
             RoomType,
             Status,

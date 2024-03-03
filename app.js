@@ -11,6 +11,7 @@ const contractsRoute = require('./route/contractRoutes');
 const paymentRoute = require('./route/paymentRoute');
 const dashboardRoute = require('./route/dashboardRoute');
 const fileUpload = require('express-fileupload');
+const runDatabaseCronJob = require('./middleware/cronjob'); // Adjust the path as necessary
 
 const cors = require('cors');
 
@@ -30,6 +31,8 @@ app.use('/api/v1/room-types', roomTypeRoute);
 app.use('/api/v1/tenants', tenantsRoute);
 app.use('/api/v1/contracts', contractsRoute);
 app.use('/api/v1/payment', paymentRoute);
+
+
 
 // app.listen(5000, () => { console.log("connected") });
 app.listen();

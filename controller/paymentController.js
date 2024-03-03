@@ -81,6 +81,7 @@ async function getAllUpcomingPayments(req, res) {
 async function getAllPropertiesUserIn(req, res) {
     try {
         const properties = await paymentModel.getAllPropertiesUserIn(req.userId);
+        console.log(properties);
         res.json(properties);
     } catch (error) {
         console.error(error);

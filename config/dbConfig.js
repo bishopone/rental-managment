@@ -5,7 +5,9 @@ const mysql = require('mysql2');
 //   host: 'localhost',
 //   password: '',
 //   database: 'room_managment', 
+//   namedPlaceholders: true
 // });
+
 const db = mysql.createConnection({
   host: "localhost",
   user: "aboldefo_abol",

@@ -40,7 +40,7 @@ async function getUserRoleById(userId) {
 
 async function getUserByEmailOrUsernameOrPhone(email, username, phoneNumber) {
   try {
-    const [rows] = await db.promise().query('SELECT * FROM users WHERE Email = ? OR Username = ? OR PhoneNumber = ?', [email, username, phoneNumber]);
+    const [rows] = await db.promise().query('SELECT * FROM users JOIN roles ON users.RoleID = roles.RoleID WHERE Email = ? OR Username = ? OR PhoneNumber = ?', [email, username, phoneNumber]);
     return rows;
   } catch (error) {
     throw error;
