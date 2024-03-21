@@ -91,9 +91,12 @@ async function updateUser(user, userId, profileImagePath = null) {
       Username: user.Username.trim(),
       Email: user.Email.trim(),
       PhoneNumber: user.PhoneNumber.trim(),
-      RoleID: user.RoleID.trim(),
     };
 
+    // Update Profile Picture if provided
+    if (user.RoleID && user.RoleID !== null && !isNaN(user.RoleID)) {
+      sanitizedUser.RoleID = user.RoleID.trim();
+    }
     // Update Profile Picture if provided
     if (profileImagePath) {
       sanitizedUser.ProfilePicture = profileImagePath;
@@ -103,7 +106,8 @@ async function updateUser(user, userId, profileImagePath = null) {
       sanitizedUser.Password = encodedPassword
     }
     const [result] = await db.promise().query('UPDATE users SET ? WHERE UserID = ?', [sanitizedUser, userId]);
-    const [rows] = await db.promise().query('SELECT * FROM users WHERE UserID = ?', [result.insertId]);
+    console.log("result", result);
+    const [rows] = await db.promise().query('SELECT * FROM users WHERE UserID = ?', [userId]);
     return rows[0];
   } catch (error) {
     throw error;
