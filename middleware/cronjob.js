@@ -68,7 +68,7 @@ const checkSendSMSToNotify = async (contracts) => {
     }
 };
 
-cron.schedule('*/30 * * * *', () => {
-    console.log('running a task every 30 minutes');
-    StartJob(); // Scheduling the StartJob function to run every 30 minutes
+cron.schedule('* * * * *', () => {
+    console.log('running a task every 1 minute');
+    StartJob(); // Scheduling the StartJob function to run every 1 minute
 });

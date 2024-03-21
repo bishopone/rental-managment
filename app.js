@@ -34,5 +34,5 @@ app.use('/api/v1/payment', paymentRoute);
 
 
 
-// app.listen(5000, () => { console.log("connected") });
-app.listen();
+app.listen(5000, () => { console.log("connected") });
+// app.listen();

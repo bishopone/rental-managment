@@ -1,55 +1,62 @@
-const { parse } = require('path');
 const db = require('../config/dbConfig');
 
 async function createPayment(paymentData) {
     try {
         console.log("paymentData");
         console.log(paymentData);
-        // Get contract details
         const [contractRows] = await db.promise().query('SELECT Rent FROM contracts WHERE ContractID = ?', [paymentData.ContractID]);
-
-        // Check if contract exists
         if (contractRows.length === 0) {
             throw new Error('Contract not found');
         }
-
-        // Extract rent amount from contract
+        console.log('paymentData.Month', paymentData.Month);
+        const month = paymentData.MultiplePayment === true ? differenceInMonths(paymentData.StartMonth, paymentData.EndMonth) :differenceInMonths(paymentData.Month, paymentData.Month) ;
+        console.log('month', month);
         const contractRent = contractRows[0].Rent;
-        console.log('month', paymentData.Month);
-        // Check if there are previous payments
-        const [previousPaymentRows] = await db.promise().query(`SELECT COALESCE(SUM(Amount), 0) AS Amount FROM payments WHERE ContractID = :contractID AND YEAR(Month) = YEAR(:date) AND MONTH(Month) = MONTH(:date);
-        `, { contractID: paymentData.ContractID, date: paymentData.Month });
-        let totalPreviousPayments = 0;
-        if (previousPaymentRows.length > 0) {
-            previousPaymentRows.map((row) => totalPreviousPayments = parseFloat(totalPreviousPayments) + parseFloat(row.Amount));
-        }
+        await Promise.all(month.map(async (m) => {
+            const [previousPaymentRows] = await db.promise().query(`SELECT COALESCE(SUM(Amount), 0) AS Amount FROM payments WHERE ContractID = :contractID AND YEAR(Month) = YEAR(:date) AND MONTH(Month) = MONTH(:date);
+            `, { contractID: paymentData.ContractID, date: m });
+            let totalPreviousPayments = 0;
+            if (previousPaymentRows.length > 0) {
+                previousPaymentRows.map((row) => totalPreviousPayments = parseFloat(totalPreviousPayments) + parseFloat(row.Amount));
+            }
+            const totalAmount = totalPreviousPayments + parseFloat(paymentData.Amount);
+            console.log(totalPreviousPayments, totalAmount, contractRent)
+            if (totalAmount > contractRent) {
+                throw new Error('Total payment amount exceeds contract rent');
+            }
+            let status = 'Pending';
+            console.log("totalAmount, contractRent");
+            console.log(parseFloat(totalAmount), parseFloat(contractRent));
+            console.log(parseFloat(totalAmount) === parseFloat(contractRent));
 
-        // Calculate total amount of payments including the new payment
-        const totalAmount = totalPreviousPayments + parseFloat(paymentData.Amount);
-        console.log(totalPreviousPayments, totalAmount, contractRent)
-        // Check if the total amount exceeds the rent
-        if (totalAmount > contractRent) {
-            throw new Error('Total payment amount exceeds contract rent');
-        }
-        let status = 'Pending';
-        console.log("totalAmount, contractRent");
-        console.log(parseFloat(totalAmount), parseFloat(contractRent));
-        console.log(parseFloat(totalAmount) === parseFloat(contractRent));
+            if (parseFloat(totalAmount) === parseFloat(contractRent)) {
+                status = 'completed';
+            }
+            const query = 'INSERT INTO payments (ContractID, Amount,Month, Description, Status) VALUES (?, ?,?, ?, ?)';
+            const params = [paymentData.ContractID, paymentData.Amount, m, paymentData.Description, status];
+            await db.promise().query(query, params);
+        }));
 
-        if (parseFloat(totalAmount) === parseFloat(contractRent)) {
-            status = 'completed';
-        }
-
-        // Set PaymentDate to current timestamp
-        const query = 'INSERT INTO payments (ContractID, Amount,Month, Description, Status) VALUES (?, ?,?, ?, ?)';
-        const params = [paymentData.ContractID, paymentData.Amount, paymentData.Month, paymentData.Description, status];
-
-        // Execute the query
-        const [result] = await db.promise().query(query, params);
-        return result.insertId;
+        return true;
     } catch (error) {
         throw error;
     }
+}
+function differenceInMonths(date1, date2) {
+    const dates = [];
+
+    // Parse the input dates
+    const d1 = new Date(date1);
+    const d2 = new Date(date2);
+
+    // Loop through dates and push them into the array
+    let currentDate = new Date(d1);
+    while (currentDate <= d2) {
+        dates.push(new Date(currentDate));
+        currentDate.setMonth(currentDate.getMonth() + 1);
+    }
+
+    return dates;
 }
 
 async function getAllPropertiesUserIn(userId) {
@@ -187,7 +194,7 @@ FROM (
     LEFT JOIN 
         payments p ON p.ContractID = c.ContractID 
     WHERE 
-        c.ContractID = 46
+        c.ContractID = ?
         AND NOT EXISTS (
             SELECT 1
             FROM payments p2
@@ -210,7 +217,7 @@ FROM (
 async function getPaymentTransaction(propertyId) {
     try {
         const query = `
-        SELECT p.PaymentID,r.RoomNumber,p.PaymentDate,p.Amount FROM payments p
+        SELECT p.PaymentID,r.RoomNumber,p.PaymentDate,p.Amount,p.Month FROM payments p
         JOIN contracts c ON c.ContractID = p.ContractID
         JOIN rooms r ON r.RoomID = c.RoomID AND r.PropertyID = ?
         ORDER BY p.PaymentDate DESC;
