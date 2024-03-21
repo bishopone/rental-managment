@@ -19,7 +19,6 @@ const app = express();
 app.use(cors());
 app.use(fileUpload());
 app.use('/api/v1/uploads', express.static(__dirname + '/uploads'));
-// app.use(bodyParser.json());
 app.use(bodyParser.json({limit: '50mb'}));
 app.use('/api/v1/user', usersRoute);    
 app.use('/api/v1/dashboard', dashboardRoute);    

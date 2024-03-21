@@ -103,7 +103,8 @@ async function updateUser(user, userId, profileImagePath = null) {
       sanitizedUser.Password = encodedPassword
     }
     const [result] = await db.promise().query('UPDATE users SET ? WHERE UserID = ?', [sanitizedUser, userId]);
-    return result;
+    const [rows] = await db.promise().query('SELECT * FROM users WHERE UserID = ?', [result.insertId]);
+    return rows[0];
   } catch (error) {
     throw error;
   }

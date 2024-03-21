@@ -133,7 +133,7 @@ async function updateUser(req, res) {
     }
 
     const result = await userModel.updateUser(user, userId, imagePath);
-    res.status(200).json({ message: 'User updated' });
+    res.status(200).json({ message: 'User updated',user: result });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Internal server error' });
