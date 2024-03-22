@@ -40,7 +40,7 @@ async function getUserRoleById(userId) {
 
 async function getUserByEmailOrUsernameOrPhone(email, username, phoneNumber) {
   try {
-    const [rows] = await db.promise().query('SELECT * FROM users JOIN roles ON users.RoleID = roles.RoleID WHERE Email = ? OR Username = ? OR PhoneNumber = ?', [email, username, phoneNumber]);
+    const [rows] = await db.promise().query('SELECT users.*,roles.RoleName FROM users JOIN roles ON users.RoleID = roles.RoleID WHERE Email = ? OR Username = ? OR PhoneNumber = ?', [email, username, phoneNumber]);
     return rows;
   } catch (error) {
     throw error;
@@ -94,7 +94,9 @@ async function updateUser(user, userId, profileImagePath = null) {
     };
 
     // Update Profile Picture if provided
+    console.log(typeof sanitizedUser.RoleID);
     if (user.RoleID && user.RoleID !== null && !isNaN(user.RoleID)) {
+      console.log(typeof sanitizedUser.RoleID);
       sanitizedUser.RoleID = user.RoleID.trim();
     }
     // Update Profile Picture if provided
@@ -108,6 +110,7 @@ async function updateUser(user, userId, profileImagePath = null) {
     const [result] = await db.promise().query('UPDATE users SET ? WHERE UserID = ?', [sanitizedUser, userId]);
     console.log("result", result);
     const [rows] = await db.promise().query('SELECT * FROM users WHERE UserID = ?', [userId]);
+    console.log("rows", rows);
     return rows[0];
   } catch (error) {
     throw error;
