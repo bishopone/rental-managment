@@ -88,13 +88,15 @@ async function loginUser(req, res) {
   const { username, password } = req.body;
   console.log(username, password);
   try {
+
     const user = await userModel.getUserByEmailOrUsernameOrPhone(username, username, username);
     if (user.length <= 0) {
       res.status(400).json({ message: 'User Not Found !' });
       return
     }
+    console.time("start")
     const validpassword = await bcrypt.compare(password, user[0].Password)
-
+    console.timeEnd("start")
     if (!validpassword) {
       res.status(400).json({ message: 'Password doesnt match !' });
       return
