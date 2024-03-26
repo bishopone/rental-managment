@@ -14,9 +14,13 @@ const fileUpload = require('express-fileupload');
 const runDatabaseCronJob = require('./middleware/cronjob'); // Adjust the path as necessary
 
 const cors = require('cors');
-
+const corsOrigin ={
+    origin:'https://shop-64682.web.app/', //or whatever port your frontend is using
+    credentials:true,            
+    optionSuccessStatus:200
+}
 const app = express();
-app.use(cors());
+app.use(cors(corsOrigin));
 app.use(fileUpload());
 app.use('/api/v1/uploads', express.static(__dirname + '/uploads'));
 app.use(bodyParser.json({limit: '50mb'}));
