@@ -20,8 +20,10 @@ app.use(cors({
     origin: "https://royalbusinesses.net"
 }
 ))
-app.use(fileUpload());
-
+app.use(fileUpload({
+    useTempFiles : true,
+    tempFileDir : '/tmp/'
+}));
 app.use(bodyParser.json());
 app.use('/api/uploads', express.static(__dirname + '/uploads'));
 app.use('/api/user', usersRoute);
