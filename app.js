@@ -22,7 +22,6 @@ app.use(cors({
 ))
 app.use(fileUpload({
     useTempFiles : true,
-    debug: true,
     tempFileDir : '/tmp/'
 }));
 app.use(bodyParser.json());
@@ -40,5 +39,5 @@ app.use('/api/payment', paymentRoute);
 
 
 
-app.listen(5006, () => { console.log("connected") });
-// app.listen();
+// app.listen(5006, () => { console.log("connected") });
+app.listen();
