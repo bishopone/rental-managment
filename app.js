@@ -1,8 +1,5 @@
 const express = require('express');
 const cors = require('cors');
-const app = express();
-const fileUpload = require('express-fileupload');
-app.use(fileUpload());
 
 const bodyParser = require('body-parser');
 const usersRoute = require('./route/usersRoute');
@@ -16,12 +13,15 @@ const contractsRoute = require('./route/contractRoutes');
 const paymentRoute = require('./route/paymentRoute');
 const dashboardRoute = require('./route/dashboardRoute');
 const runDatabaseCronJob = require('./middleware/cronjob'); // Adjust the path as necessary
+const fileUpload = require('express-fileupload');
 
 app.use(cors({
     origin: "https://royalbusinesses.net"
 }
 ))
-// app.use(cors())
+const app = express();
+app.use(fileUpload());
+
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use('/api/uploads', express.static(__dirname + '/uploads'));
 app.use('/api/user', usersRoute);
