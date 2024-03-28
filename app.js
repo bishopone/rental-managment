@@ -22,7 +22,7 @@ app.use(cors({
 ))
 app.use(fileUpload());
 
-app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.json());
 app.use('/api/uploads', express.static(__dirname + '/uploads'));
 app.use('/api/user', usersRoute);
 app.use('/api/dashboard', dashboardRoute);
