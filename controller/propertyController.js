@@ -53,7 +53,7 @@ async function createProperty(req, res) {
 
     try {
         const { owner, name, location, description, numFloors } = req.body;
-        console.log(image)
+        console.log(req)
         const { image } = req.files; // Assuming 'image' is the name of the file input field
         console.log(image)
         // Check if all required fields are present and non-empty
