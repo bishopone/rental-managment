@@ -12,18 +12,15 @@ const paymentRoute = require('./route/paymentRoute');
 const dashboardRoute = require('./route/dashboardRoute');
 const fileUpload = require('express-fileupload');
 const runDatabaseCronJob = require('./middleware/cronjob'); // Adjust the path as necessary
-
+const corsOption = require('./config/corsOption'); // Adjust the path as necessary
 const cors = require('cors');
-const corsOrigin ={
-    origin:'https://shop-64682.web.app/', //or whatever port your frontend is using
-    credentials:true,            
-    optionSuccessStatus:200
-}
 const app = express();
-app.use(cors(corsOrigin));
+
+app.use(cors(corsOption));
 app.use(fileUpload());
-app.use('/api/v1/uploads', express.static(__dirname + '/uploads'));
 app.use(bodyParser.json({limit: '50mb'}));
+
+app.use('/api/v1/uploads', express.static(__dirname + '/uploads'));
 app.use('/api/v1/user', usersRoute);    
 app.use('/api/v1/dashboard', dashboardRoute);    
 app.use('/api/v1/role', roleRoute);
