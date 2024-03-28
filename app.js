@@ -12,29 +12,28 @@ const paymentRoute = require('./route/paymentRoute');
 const dashboardRoute = require('./route/dashboardRoute');
 const fileUpload = require('express-fileupload');
 const runDatabaseCronJob = require('./middleware/cronjob'); // Adjust the path as necessary
-const corsOption = require('./config/corsOption'); // Adjust the path as necessary
 const cors = require('cors');
 const app = express();
 
 app.use(cors({
-        origin: "https://royalbusinesses.net"
-    }
+    origin: "https://royalbusinesses.net"
+}
 ))
-app.options('*', cors())
+// app.options('*', cors())
 app.use(fileUpload());
-app.use(bodyParser.json({limit: '50mb'}));
+app.use(bodyParser.json({ limit: '50mb' }));
 
-app.use('/api/v1/uploads', express.static(__dirname + '/uploads'));
-app.use('/api/v1/user', usersRoute);    
-app.use('/api/v1/dashboard', dashboardRoute);    
-app.use('/api/v1/role', roleRoute);
-app.use('/api/v1/permission', permissionRoute);
-app.use('/api/v1/propertie', propertieRoute);
-app.use('/api/v1/room', roomRoute);
-app.use('/api/v1/room-types', roomTypeRoute);
-app.use('/api/v1/tenants', tenantsRoute);
-app.use('/api/v1/contracts', contractsRoute);
-app.use('/api/v1/payment', paymentRoute);
+app.use('/api/uploads', express.static(__dirname + '/uploads'));
+app.use('/api/user', usersRoute);
+app.use('/api/dashboard', dashboardRoute);
+app.use('/api/role', roleRoute);
+app.use('/api/permission', permissionRoute);
+app.use('/api/propertie', propertieRoute);
+app.use('/api/room', roomRoute);
+app.use('/api/room-types', roomTypeRoute);
+app.use('/api/tenants', tenantsRoute);
+app.use('/api/contracts', contractsRoute);
+app.use('/api/payment', paymentRoute);
 
 
 
