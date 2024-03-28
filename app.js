@@ -14,12 +14,12 @@ const paymentRoute = require('./route/paymentRoute');
 const dashboardRoute = require('./route/dashboardRoute');
 const runDatabaseCronJob = require('./middleware/cronjob'); // Adjust the path as necessary
 const fileUpload = require('express-fileupload');
+const app = express();
 
 app.use(cors({
     origin: "https://royalbusinesses.net"
 }
 ))
-const app = express();
 app.use(fileUpload());
 
 app.use(bodyParser.json({ limit: '50mb' }));
