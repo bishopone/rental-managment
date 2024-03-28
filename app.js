@@ -16,9 +16,9 @@ const corsOption = require('./config/corsOption'); // Adjust the path as necessa
 const cors = require('cors');
 const app = express();
 
-app.use(cors());
+app.use(cors(corsOption));
 app.use((req, res, next) => {
-    res.setHeader("Access-Control-Allow-Origin", "http://pzmap.crash-override.net");
+    res.setHeader("Access-Control-Allow-Origin", "https://www.royalbusinesses.net");
     res.setHeader("Access-Control-Allow-Methods", "POST, GET, PUT, Delete");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type");
     next();
