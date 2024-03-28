@@ -17,6 +17,12 @@ const cors = require('cors');
 const app = express();
 
 app.use(cors(corsOption));
+app.use((req, res, next) => {
+    res.setHeader("Access-Control-Allow-Origin", "http://pzmap.crash-override.net");
+    res.setHeader("Access-Control-Allow-Methods", "POST, GET, PUT, Delete");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type");
+    next();
+  })
 app.options('*', cors());
 app.use(fileUpload());
 app.use(bodyParser.json({limit: '50mb'}));
