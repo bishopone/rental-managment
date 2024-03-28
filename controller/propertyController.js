@@ -53,9 +53,10 @@ async function createProperty(req, res) {
 
     try {
         const { owner, name, location, description, numFloors } = req.body;
-        const { image } = req.files; // Assuming 'image' is the name of the file input field
-        // Check if all required fields are present and non-empty
         console.log(image)
+        const { image } = req.files; // Assuming 'image' is the name of the file input field
+        console.log(image)
+        // Check if all required fields are present and non-empty
         if (!owner || !name || !location || !description || !image || !numFloors) {
 
             res.status(400).json({ error: 'All fields are required.' });
