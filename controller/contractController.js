@@ -4,7 +4,7 @@ const contractModel = require('../model/contractModel');
 async function createContract(req, res) {
     try {
         const contractData = req.body;
-        console.log(req);
+        console.error(req);
         const { attachments } = req.files
         const contractId = await contractModel.createContractWithAttachments(contractData, attachments, req.userid);
         res.status(201).json({ message: 'Contract created successfully', contractId });
