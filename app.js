@@ -16,7 +16,7 @@ const corsOption = require('./config/corsOption'); // Adjust the path as necessa
 const cors = require('cors');
 const app = express();
 
-app.use(cors(corsOption));
+app.use(cors());
 app.use(fileUpload());
 app.use(bodyParser.json({limit: '50mb'}));
 

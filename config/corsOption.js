@@ -1,6 +1,6 @@
 const corsOptions = [
     {
-        origin: 'https://royalbusinesses.net',
+        origin: 'https://www.royalbusinesses.net',
         credentials: true,
         optionSuccessStatus: 200
     },
