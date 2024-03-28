@@ -15,11 +15,11 @@ const runDatabaseCronJob = require('./middleware/cronjob'); // Adjust the path a
 const cors = require('cors');
 const app = express();
 
-// app.use(cors({
-//     origin: "https://royalbusinesses.net"
-// }
-// ))
-app.use(cors())
+app.use(cors({
+    origin: "https://royalbusinesses.net"
+}
+))
+// app.use(cors())
 app.use(fileUpload());
 app.use(bodyParser.json({ limit: '50mb' }));
 
