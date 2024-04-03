@@ -66,7 +66,7 @@ async function createContractWithAttachments(contractData, attachments, userId) 
     try {
         // Insert contract data into the contracts table
         console.log("contractData");
-        console.log(contractData);
+        console.log(contractData,attachments);
         const [room] = await db.promise().query('SELECT * FROM `rooms` WHERE RoomID = ?', [contractData.RoomID]);
         if(room[0].Status !== "Available"){
             throw 'room not available'
