@@ -21,9 +21,8 @@ app.use(cors({
 }
 ))
 app.use(fileUpload({
-    useTempFiles : true,
-    debug: true,
-    tempFileDir : '/tmp/'
+    useTempFiles: true,
+    tempFileDir: path.join(__dirname, './tmp'),
 }));
 app.use(bodyParser.json());
 app.use('/api/uploads', express.static(__dirname + '/uploads'));
