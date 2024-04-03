@@ -20,12 +20,13 @@
     "cron-job": "^1.0.3",
     "ethiopian-date": "^0.0.6",
     "express": "^4.18.2",
-    "express-fileupload": "^1.5.0",
+    "express-fileupload": "^1.4.1",
     "firebase-admin": "^11.11.0",
     "fs": "^0.0.1-security",
     "jsonwebtoken": "^9.0.2",
     "mysql2": "^3.6.1",
     "node-cron": "^3.0.3",
+    "nginx": "^1.0.8",
     "path": "^0.12.7"
   }
 }
