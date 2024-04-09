@@ -14,7 +14,6 @@ const contractsRoute = require('./route/contractRoutes');
 const paymentRoute = require('./route/paymentRoute');
 const dashboardRoute = require('./route/dashboardRoute');
 const runDatabaseCronJob = require('./middleware/cronjob'); // Adjust the path as necessary
-const fileUpload = require('express-fileupload');
 const app = express();
 
 app.use(cors())
@@ -22,7 +21,6 @@ app.use(cors())
 //     origin: "https://royalbusinesses.net"
 // }
 // ))
-app.use(fileUpload());
 app.use(bodyParser.json());
 app.use('/api/uploads', express.static(__dirname + '/uploads'));
 app.use('/api/user', usersRoute);
@@ -38,5 +36,5 @@ app.use('/api/payment', paymentRoute);
 
 
 
-// app.listen(5005, () => { console.log("connected") });
+// app.listen(5000, () => { console.log("connected") });
 app.listen();

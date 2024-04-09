@@ -6,6 +6,18 @@ const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const fs = require('fs');
 const path = require('path');
+const multer = require('multer');
+
+// Set up multer storage configuration
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, './uploads/profiles'); // Destination folder for profile pictures
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname); // Keep the original file name
+  }
+});
+const upload = multer({ storage: storage });
 
 async function getAllUsers(req, res) {
   try {
@@ -53,36 +65,44 @@ async function getUserById(req, res) {
   }
 }
 
+
 async function createUser(req, res) {
   try {
     const user = req.body;
-    // console.log(req)
-    // console.log(user)
-    const { ProfilePicture } = req.files;
+    const ProfilePicture = req.file; // Access the uploaded file via req.file
     if (!ProfilePicture) {
       res.status(400).json({ error: 'Image file is missing.' });
       return;
     }
-    const propertiesDir = path.join('./uploads/profiles');
-    if (!fs.existsSync(propertiesDir)) {
-      fs.mkdirSync(propertiesDir);
-    }
-    const imagePath = path.join(propertiesDir, ProfilePicture.name);
-    ProfilePicture.mv(imagePath, async (err) => {
-      if (err) {
-        res.status(500).json({ error: 'Failed to upload image.' });
-        return;
-      }
-    });
+    const imagePath = ProfilePicture.path; // Use the file path provided by multer
     user.ProfilePicture = imagePath;
     const result = await userModel.createUser(user);
     res.status(201).json({ message: 'User created', userId: result.insertId });
-    return;
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error });
   }
 }
+
+async function updateUser(req, res) {
+  try {
+    console.log("ProfilePicture");
+    const user = req.body;
+    const userId = req.params.id;
+    const ProfilePicture = req.file; // Access the uploaded file via req.file
+    console.log(ProfilePicture);
+    var imagePath = null;
+    if (ProfilePicture) {
+      imagePath = ProfilePicture.path; // Use the file path provided by multer
+    }
+    const result = await userModel.updateUser(user, userId, imagePath);
+    res.status(200).json({ user: result });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+}
+
 
 async function loginUser(req, res) {
   const { username, password } = req.body;
@@ -112,35 +132,6 @@ async function loginUser(req, res) {
   }
 }
 
-async function updateUser(req, res) {
-  try {
-    const user = req.body;
-    const userId = req.params.id;
-    const ProfilePicture = req.files?.ProfilePicture;
-    console.log(req.files)
-    console.log(user)
-    var imagePath = null
-    if (ProfilePicture) {
-      const propertiesDir = path.join('./uploads/profiles');
-      if (!fs.existsSync(propertiesDir)) {
-        fs.mkdirSync(propertiesDir);
-      }
-      imagePath = path.join(propertiesDir, ProfilePicture.name);
-      ProfilePicture.mv(imagePath, async (err) => {
-        if (err) {
-          res.status(500).json({ error: 'Failed to upload image.' });
-          return;
-        }
-      });
-    }
-
-    const result = await userModel.updateUser(user, userId, imagePath);
-    res.status(200).json({ user: result });
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-}
 
 async function deleteUser(req, res) {
   const userId = req.params.id;
