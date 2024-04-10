@@ -1,7 +1,6 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
-
 const bodyParser = require('body-parser');
 const usersRoute = require('./route/usersRoute');
 const roleRoute = require('./route/roleRoute');
@@ -13,14 +12,12 @@ const tenantsRoute = require('./route/tenantsRoute');
 const contractsRoute = require('./route/contractRoutes');
 const paymentRoute = require('./route/paymentRoute');
 const dashboardRoute = require('./route/dashboardRoute');
-const runDatabaseCronJob = require('./middleware/cronjob'); // Adjust the path as necessary
-const app = express();
+const runDatabaseCronJob = require('./middleware/cronjob'); 
+const fileUpload = require('express-fileupload');
+const app = express();  
 
 app.use(cors())
-// app.use(cors({
-//     origin: "https://royalbusinesses.net"
-// }
-// ))
+// app.use(cors({ origin: "https://royalbusinesses.net" } ))
 app.use(fileUpload({
     useTempFiles: true,
     tempFileDir: path.join(__dirname, './tmp'),
